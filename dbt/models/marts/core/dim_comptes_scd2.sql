@@ -7,8 +7,7 @@
 -- Attendus :
 --   - Une ligne par version (date_debut_validite, date_fin_validite)
 --   - Colonnes techniques : is_current, version_number
---   - Surrogate key : {{ dbt_utils.generate_surrogate_key([
---         'compte_id', 'date_debut_validite']) }}
+--   - Surrogate key : dbt_utils.generate_surrogate_key(['compte_id', 'date_debut_validite'])
 --
 -- Indice : utiliser dbt_valid_from et dbt_valid_to du snapshot.
 -- Voir docs/DESIGN.md section "SCD2 Pattern".
