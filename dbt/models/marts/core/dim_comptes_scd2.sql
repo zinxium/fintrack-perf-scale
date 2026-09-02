@@ -33,7 +33,7 @@ select
     type_compte,
     dbt_valid_from as date_debut_validite,
     dbt_valid_to   as date_fin_validite,
-    (dbt_valid_to is null) as is_current
+    case when dbt_valid_to is null then true else false end as is_current
     -- version_number à ajouter via row_number
 
 from {{ ref('snapshot_comptes') }}

@@ -44,9 +44,9 @@ models:
 
   - name: dim_comptes_scd2
     description: "Dimension comptes historisée (SCD Type 2)"
+    group: core
     config:
       access: public
-      group: core
 
   - name: dim_categories
     description: "Dimension catégories avec hiérarchie résolue"
