@@ -11,7 +11,7 @@
 -- Clustering keys posés dès la création pour éviter un reclustering coûteux.
 -- ============================================================
 
-USE ROLE FINTRACK_TRANSFORM_ROLE;
+USE ROLE FINTRACK_INGESTION_ROLE;
 USE WAREHOUSE WH_INGESTION;
 USE DATABASE FINTRACK_PROD;
 USE SCHEMA RAW;
