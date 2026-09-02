@@ -200,7 +200,7 @@ CREATE OR REPLACE TABLE raw_transactions (
     original_transaction_id         NUMBER(18, 0),
     _loaded_at                      TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 )
-CLUSTER BY (tenant_id, DATE_TRUNC('MONTH', date_transaction));
+CLUSTER BY (tenant_id, date_transaction);
 
 -- ============================================
 -- VIREMENTS INTERNES
@@ -223,7 +223,7 @@ CREATE OR REPLACE TABLE raw_virements (
     updated_at              TIMESTAMP_NTZ,
     _loaded_at              TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 )
-CLUSTER BY (tenant_id, DATE_TRUNC('MONTH', date_virement));
+CLUSTER BY (tenant_id, date_virement);
 
 -- ============================================
 -- QUERY TAG PAR DÉFAUT
