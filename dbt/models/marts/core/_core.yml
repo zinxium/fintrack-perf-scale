@@ -6,8 +6,9 @@ models:
   # ============================================
   - name: dim_tenants
     description: "Dimension des banques partenaires B2B2C"
-    access: public
     group: core
+    config:
+      access: public
     columns:
       - name: tenant_id
         tests: [unique, not_null]
@@ -20,8 +21,9 @@ models:
 
   - name: dim_comptes
     description: "Dimension comptes — état courant"
-    access: public
     group: core
+    config:
+      access: public
     columns:
       - name: compte_id
         tests: [unique, not_null]
@@ -42,21 +44,24 @@ models:
 
   - name: dim_comptes_scd2
     description: "Dimension comptes historisée (SCD Type 2)"
-    access: public
     group: core
+    config:
+      access: public
 
   - name: dim_categories
     description: "Dimension catégories avec hiérarchie résolue"
-    access: public
     group: core
+    config:
+      access: public
     columns:
       - name: categorie_id
         tests: [unique, not_null]
 
   - name: bridge_comptes_titulaires
     description: "Bridge table pour les comptes joints (many-to-many)"
-    access: private
     group: core
+    config:
+      access: private
 
   # ============================================
   # FAITS
@@ -65,10 +70,10 @@ models:
     description: |
       Table de faits principale — 50-100M lignes.
       Enrichie avec FX à date, catégorisation, compliance.
-    access: public
     group: core
     # Contract dbt : les consommateurs externes dépendent de ce schéma
     config:
+      access: public
       contract:
         enforced: false  # Activer une fois la structure stabilisée
     columns:
@@ -109,8 +114,9 @@ models:
 
   - name: fct_virements
     description: "Faits virements — double-écriture sortant/entrant"
-    access: public
     group: core
+    config:
+      access: public
     columns:
       - name: virement_id
         tests: [not_null]
