@@ -18,7 +18,7 @@
     config(
         materialized='table',
         tags=['marts', 'core', 'dim', 'scd2', 'todo'],
-        cluster_by=['compte_id']
+        cluster_by='compte_id'
     )
 }}
 
