@@ -16,7 +16,7 @@
 {%- endmacro %}
 
 
-{% macro unset_query_tag() -%}
+{% macro unset_query_tag(original_query_tag=none) -%}
     {% if target.type == 'snowflake' %}
         {% do run_query("alter session unset query_tag") %}
     {% endif %}
