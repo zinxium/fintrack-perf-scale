@@ -59,3 +59,21 @@ sources:
         columns:
           - name: virement_id
             tests: [unique, not_null]
+
+      - name: raw_titulaires
+        description: "Personnes physiques titulaires de comptes"
+        loaded_at_field: _loaded_at
+        columns:
+          - name: titulaire_id
+            tests: [unique, not_null]
+
+      - name: raw_compte_titulaires
+        description: "Table de liaison many-to-many comptes ↔ titulaires"
+        loaded_at_field: _loaded_at
+        columns:
+          - name: id
+            tests: [unique, not_null]
+          - name: compte_id
+            tests: [not_null]
+          - name: titulaire_id
+            tests: [not_null]
