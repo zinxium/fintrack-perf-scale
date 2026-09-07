@@ -65,7 +65,7 @@ union all
 
 -- Taux 1:1 pour EUR → EUR
 select
-    date_cotation,
+    date_day::date as date_cotation,
     'EUR' as devise_source,
     'EUR' as devise_cible,
     1.0 as taux
