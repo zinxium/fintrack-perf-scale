@@ -27,23 +27,45 @@
     )
 }}
 
-with virements as (
-    select * from {{ ref('stg_virements') }}
-    {% if is_incremental() %}
-        where _loaded_at >= (select dateadd('day', -3, max(_loaded_at)) from {{ this }})
-    {% endif %}
-    and statut = 'execute'
-)
+with virements as (                     
+      select * from {{ ref('stg_virements') }}
+      where 1=1                                                                     
+      {% if is_incremental() %}
+          and _loaded_at >= (select dateadd('day', -3, max(_loaded_at)) from {{ this
+   }})                                                                            
+      {% endif %}
+      and statut = 'execute'
+  )
 
--- Squelette — À COMPLÉTER avec la double-écriture
+--  Leg sortante : débite le compte source
 select
     virement_id,
     tenant_id,
     compte_source_id as compte_id,
+    compte_dest_id as contrepartie_compte_id,
     'sortant' as virement_leg,
+    -montant as montant_signe,
     montant,
     devise,
     date_virement,
     statut,
     _loaded_at
 from virements
+
+union all
+
+--leg entrante : credite le compte destination
+
+ select
+      virement_id,
+      tenant_id,
+      compte_dest_id          as compte_id,
+      compte_source_id        as contrepartie_compte_id,
+      'entrant'               as virement_leg,
+      montant                 as montant_signe,
+      montant,
+      devise,
+      date_virement,
+      statut,
+      _loaded_at
+  from virements

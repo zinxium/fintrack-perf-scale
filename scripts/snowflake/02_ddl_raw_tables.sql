@@ -11,7 +11,7 @@
 -- Clustering keys posés dès la création pour éviter un reclustering coûteux.
 -- ============================================================
 
-USE ROLE FINTRACK_TRANSFORM_ROLE;
+USE ROLE FINTRACK_INGESTION_ROLE;
 USE WAREHOUSE WH_INGESTION;
 USE DATABASE FINTRACK_PROD;
 USE SCHEMA RAW;
@@ -200,7 +200,7 @@ CREATE OR REPLACE TABLE raw_transactions (
     original_transaction_id         NUMBER(18, 0),
     _loaded_at                      TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 )
-CLUSTER BY (tenant_id, DATE_TRUNC('MONTH', date_transaction));
+CLUSTER BY (tenant_id, date_transaction);
 
 -- ============================================
 -- VIREMENTS INTERNES
@@ -223,7 +223,41 @@ CREATE OR REPLACE TABLE raw_virements (
     updated_at              TIMESTAMP_NTZ,
     _loaded_at              TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 )
-CLUSTER BY (tenant_id, DATE_TRUNC('MONTH', date_virement));
+CLUSTER BY (tenant_id, date_virement);
+
+-- ============================================
+-- TITULAIRES (personnes physiques)
+-- ============================================
+CREATE OR REPLACE TABLE raw_titulaires (
+    titulaire_id                INTEGER,
+    nom                         VARCHAR(100),
+    prenom                      VARCHAR(100),
+    email                       VARCHAR(200),
+    telephone                   VARCHAR(30),
+    date_naissance              DATE,
+    nationalite                 VARCHAR(2),
+    pays_residence              VARCHAR(2),
+    type_titulaire_defaut       VARCHAR(20),
+    is_active                   BOOLEAN,
+    created_at                  TIMESTAMP_NTZ,
+    _loaded_at                  TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+-- ============================================
+-- COMPTE-TITULAIRES (bridge many-to-many)
+-- ============================================
+CREATE OR REPLACE TABLE raw_compte_titulaires (
+    id                          INTEGER,
+    compte_id                   INTEGER,
+    titulaire_id                INTEGER,
+    type_relation               VARCHAR(20),   -- principal | cotitulaire | mandataire | tuteur
+    date_debut                  DATE,
+    date_fin                    DATE,          -- NULL = relation active
+    is_active                   BOOLEAN,
+    created_at                  TIMESTAMP_NTZ,
+    _loaded_at                  TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+)
+CLUSTER BY (compte_id);
 
 -- ============================================
 -- QUERY TAG PAR DÉFAUT
