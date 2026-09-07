@@ -473,6 +473,120 @@ def generate_virements(n: int, compte_ids: list, tenant_ids: list,
     print(f"  ✓ {path.name} ({n:,} virements)")
 
 
+TYPES_TITULAIRE = ["principal", "cotitulaire", "mandataire", "tuteur"]
+
+
+def generate_titulaires(n_comptes: int, output_dir: Path, fake: Faker) -> list:
+    """Personnes physiques titulaires de comptes.
+
+    On génère ~80% du nombre de comptes comme titulaires distincts
+    (certains titulaires ont plusieurs comptes, d'où le ratio < 1).
+    """
+    n = max(1, int(n_comptes * 0.80))
+    path = output_dir / "raw_titulaires.csv.gz"
+    with gzip.open(path, "wt", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "titulaire_id", "nom", "prenom", "email", "telephone",
+            "date_naissance", "nationalite", "pays_residence",
+            "type_titulaire_defaut", "is_active", "created_at",
+        ])
+        for tid in range(1, n + 1):
+            w.writerow([
+                tid,
+                fake.last_name(),
+                fake.first_name(),
+                fake.email(),
+                fake.phone_number(),
+                fake.date_of_birth(minimum_age=18, maximum_age=85).isoformat(),
+                fake.country_code(),
+                fake.country_code(),
+                random.choices(
+                    TYPES_TITULAIRE,
+                    weights=[0.75, 0.15, 0.07, 0.03]
+                )[0],
+                random.random() > 0.03,
+                fake.date_time_between(start_date="-5y", end_date="now").isoformat(),
+            ])
+            if tid % 100_000 == 0:
+                print(f"    ... {tid:,} titulaires générés")
+    print(f"  ✓ {path.name} ({n:,} titulaires)")
+    return list(range(1, n + 1))
+
+
+def generate_compte_titulaires(compte_ids: list, titulaire_ids: list,
+                                output_dir: Path, fake: Faker) -> None:
+    """Table de liaison comptes ↔ titulaires (bridge).
+
+    Règles :
+      - Chaque compte a exactement 1 titulaire principal.
+      - Les comptes de type joint (~20%) ont un 2e titulaire cotitulaire.
+      - ~5% des comptes ont un mandataire supplémentaire.
+    """
+    path = output_dir / "raw_compte_titulaires.csv.gz"
+    rows = 0
+    with gzip.open(path, "wt", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "id", "compte_id", "titulaire_id", "type_relation",
+            "date_debut", "date_fin", "is_active", "created_at",
+        ])
+        row_id = 1
+        for compte_id in compte_ids:
+            date_debut = fake.date_between(start_date="-5y", end_date="-30d")
+
+            # Titulaire principal (toujours présent)
+            principal_id = random.choice(titulaire_ids)
+            w.writerow([
+                row_id, compte_id, principal_id, "principal",
+                date_debut.isoformat(), None, True,
+                fake.date_time_between(
+                    start_date=date_debut, end_date="now"
+                ).isoformat(),
+            ])
+            row_id += 1
+            rows += 1
+
+            # Cotitulaire pour ~20% des comptes
+            if random.random() < 0.20:
+                cotit_id = random.choice(titulaire_ids)
+                while cotit_id == principal_id:
+                    cotit_id = random.choice(titulaire_ids)
+                # Le cotitulaire peut être clôturé (date_fin non nulle)
+                is_active = random.random() > 0.10
+                date_fin = (
+                    None if is_active
+                    else fake.date_between(
+                        start_date=date_debut, end_date="today"
+                    ).isoformat()
+                )
+                w.writerow([
+                    row_id, compte_id, cotit_id, "cotitulaire",
+                    date_debut.isoformat(), date_fin, is_active,
+                    fake.date_time_between(
+                        start_date=date_debut, end_date="now"
+                    ).isoformat(),
+                ])
+                row_id += 1
+                rows += 1
+
+            # Mandataire pour ~5% des comptes
+            if random.random() < 0.05:
+                mand_id = random.choice(titulaire_ids)
+                w.writerow([
+                    row_id, compte_id, mand_id, "mandataire",
+                    fake.date_between(start_date=date_debut, end_date="today").isoformat(),
+                    None, True,
+                    fake.date_time_between(
+                        start_date=date_debut, end_date="now"
+                    ).isoformat(),
+                ])
+                row_id += 1
+                rows += 1
+
+    print(f"  ✓ {path.name} ({rows:,} liaisons pour {len(compte_ids):,} comptes)")
+
+
 # ============================================================
 # MAIN
 # ============================================================
@@ -511,33 +625,40 @@ def main() -> None:
     print(f"Comptes       : {preset['n_comptes']:>15,}")
     print(f"Transactions  : {preset['n_transactions']:>15,}")
     print(f"Virements     : {preset['n_comptes'] // 10:>15,}")
+    print(f"Titulaires    : ~{int(preset['n_comptes'] * 0.80):>14,}")
     print(f"Output        : {output_dir}")
     print(f"Seed          : {args.seed}")
     print("=" * 60)
 
     start = datetime.now()
 
-    print("\n[1/6] Tenants ...")
+    print("\n[1/8] Tenants ...")
     tenant_ids = generate_tenants(preset["n_tenants"], output_dir)
 
-    print("\n[2/6] Catégories ...")
+    print("\n[2/8] Catégories ...")
     generate_categories(output_dir)
 
-    print("\n[3/6] Taux FX (730 jours) ...")
+    print("\n[3/8] Taux FX (730 jours) ...")
     generate_fx_rates(output_dir,
                       datetime(2023, 1, 1),
                       datetime(2024, 12, 31))
 
-    print("\n[4/6] Comptes ...")
+    print("\n[4/8] Comptes ...")
     compte_ids = generate_comptes(preset["n_comptes"], tenant_ids, output_dir, fake)
 
-    print("\n[5/6] Transactions ...")
+    print("\n[5/8] Transactions ...")
     generate_transactions(preset["n_transactions"], compte_ids, tenant_ids,
                           output_dir, fake)
 
-    print("\n[6/6] Virements ...")
+    print("\n[6/8] Virements ...")
     generate_virements(preset["n_comptes"] // 10, compte_ids, tenant_ids,
                        output_dir, fake)
+
+    print("\n[7/8] Titulaires ...")
+    titulaire_ids = generate_titulaires(preset["n_comptes"], output_dir, fake)
+
+    print("\n[8/8] Compte-Titulaires (bridge) ...")
+    generate_compte_titulaires(compte_ids, titulaire_ids, output_dir, fake)
 
     duration = datetime.now() - start
     print("\n" + "=" * 60)
