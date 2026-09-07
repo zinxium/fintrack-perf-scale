@@ -10,7 +10,7 @@ dbt/target/
 dbt/dbt_packages/
 dbt/logs/
 dbt/.user.yml
-
+note.md
 # Data
 data/raw/*.csv
 data/raw/*.csv.gz

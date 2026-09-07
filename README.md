@@ -106,7 +106,7 @@ Vérifier :
 
 ```bash
 cd dbt
-dbt debug --target dev
+dbt debug --target default
 dbt deps
 ```
 
@@ -139,23 +139,23 @@ snowsql -f scripts/snowflake/03_stage_and_copy.sql
 cd dbt
 
 # Build complet (initial full-refresh)
-dbt build --target dev --exclude tag:todo
+dbt build --target default --exclude tag:todo
 
 # Vérifier les modèles créés
-dbt list --target dev --resource-type model
+dbt list --target default --resource-type model
 ```
 
 ### 7. Vérifier les tests
 
 ```bash
-dbt test --target dev --exclude tag:todo
+dbt test --target default --exclude tag:todo
 dbt test --select unit_test:*   # dbt 1.8+
 ```
 
 ### 8. Générer et servir la doc
 
 ```bash
-dbt docs generate --target dev
+dbt docs generate --target default
 dbt docs serve --port 8080
 ```
 

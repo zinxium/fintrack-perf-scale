@@ -22,16 +22,43 @@
     )
 }}
 
--- Version simplifiée pour démarrer — à remplacer par la version récursive
-select
-    categorie_id,
-    nom_categorie,
-    type_categorie,
-    groupe,
-    categorie_parent_id,
-    niveau_hierarchique,
-    -- TODO : ajouter chemin_complet et id_racine
-    nom_categorie as chemin_complet,
-    categorie_id as id_racine
+    with recursive 
 
-from {{ ref('stg_categories') }}
+    source as (
+        select * from {{ ref('stg_categories') }}
+    ),
+     hierarchie as (
+      -- Ancre : catégories racines (sans parent)
+      select
+          categorie_id,
+          nom_categorie,
+          type_categorie,
+          groupe,
+          categorie_parent_id,
+          niveau_hierarchique,
+          nom_categorie                    as chemin_complet,
+          categorie_id                     as id_racine
+      from source
+      where categorie_parent_id is null
+
+      union all
+
+      -- Récursion : enfants
+      select
+          c.categorie_id,
+          c.nom_categorie,
+          c.type_categorie,
+          c.groupe,
+          c.categorie_parent_id,
+          c.niveau_hierarchique,
+          h.chemin_complet || ' > ' || c.nom_categorie as chemin_complet,
+          h.id_racine
+      from source c
+      inner join hierarchie h
+          on c.categorie_parent_id = h.categorie_id
+
+  )
+
+  select * from hierarchie
+
+ 
