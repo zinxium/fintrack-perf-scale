@@ -27,8 +27,7 @@ with source as (
     select * from {{ source('fintrack_raw', 'raw_transactions') }}
     {% if is_incremental() %}
         -- Fenêtre glissante de 7 jours pour capturer les mises à jour de statut
-        where _loaded_at >= (select dateadd('day', -7, max(_loaded_at)) from {{ this }})
-    {% endif %}
+        where _loaded_at >= (select dateadd('day', -{{ var('incremental_lookback_days', 7) }}, max(_loaded_at)) from {{ this }})    {% endif %}
 ),
 
 typage as (
