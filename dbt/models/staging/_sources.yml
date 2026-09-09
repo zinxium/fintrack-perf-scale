@@ -6,11 +6,13 @@ sources:
     schema: RAW
     description: "Données brutes chargées depuis le core banking system"
 
+
     # Freshness SLA — configurez selon les tenants de production
-    freshness:
-      warn_after:  {count: 6,  period: hour}
-      error_after: {count: 24, period: hour}
-    loaded_at_field: _loaded_at
+    config:
+      freshness:
+        warn_after:  {count: 6,  period: hour}
+        error_after: {count: 24, period: hour}
+      loaded_at_field: _loaded_at
 
     tables:
       - name: raw_tenants
