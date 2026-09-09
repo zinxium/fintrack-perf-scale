@@ -36,7 +36,7 @@ with base as (
     select * from {{ ref('int_transactions_normalisees') }}
 
     {% if is_incremental() %}
-        where _loaded_at >= (select dateadd('day', -7, max(_loaded_at)) from {{ this }})
+        where _loaded_at >= (select dateadd('day', -{{ var('incremental_lookback_days', 7) }}, max(_loaded_at)) from {{ this }})
     {% endif %}
 ),
 
