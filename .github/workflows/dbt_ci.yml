@@ -90,8 +90,7 @@ jobs:
           dbt build \
             --profiles-dir . \
             --target ci \
-            --select "state:modified+" \
-            --defer --state ../prod-artifacts \
+            --exclude tag:benchmark \
             --fail-fast
 
       - name: Cleanup CI schema
