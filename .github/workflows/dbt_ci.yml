@@ -63,12 +63,13 @@ jobs:
 
       - name: dbt deps
         working-directory: ./dbt
-        run: dbt deps
+        run: dbt deps --profiles-dir .
 
       - name: dbt build (state:modified + downstream)
         working-directory: ./dbt
         run: |
           dbt build \
+            --profiles-dir . \
             --target ci \
             --select "state:modified+" \
             --defer --state ../prod-artifacts \
@@ -79,5 +80,6 @@ jobs:
         working-directory: ./dbt
         run: |
           dbt run-operation drop_schema \
+            --profiles-dir . \
             --target ci \
             --args "{schema_name: CI_${{ github.event.pull_request.number }}}"
