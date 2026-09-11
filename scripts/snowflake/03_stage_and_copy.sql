@@ -86,15 +86,31 @@ FILE_FORMAT = (FORMAT_NAME = ff_csv_gz)
 ON_ERROR = 'CONTINUE'
 RETURN_FAILED_ONLY = TRUE;
 
+-- Titulaires
+COPY INTO raw_titulaires
+FROM @fintrack_stage/raw_titulaires.csv.gz
+FILE_FORMAT = (FORMAT_NAME = ff_csv_gz)
+ON_ERROR = 'CONTINUE'
+RETURN_FAILED_ONLY = TRUE;
+
+-- Compte-Titulaires (bridge)
+COPY INTO raw_compte_titulaires
+FROM @fintrack_stage/raw_compte_titulaires.csv.gz
+FILE_FORMAT = (FORMAT_NAME = ff_csv_gz)
+ON_ERROR = 'CONTINUE'
+RETURN_FAILED_ONLY = TRUE;
+
 -- ============================================
 -- VALIDATION POST-LOAD
 -- ============================================
-SELECT 'raw_tenants'      AS table_name, COUNT(*) AS row_count FROM raw_tenants
-UNION ALL SELECT 'raw_categories',    COUNT(*) FROM raw_categories
-UNION ALL SELECT 'raw_fx_rates',      COUNT(*) FROM raw_fx_rates
-UNION ALL SELECT 'raw_comptes',       COUNT(*) FROM raw_comptes
-UNION ALL SELECT 'raw_transactions',  COUNT(*) FROM raw_transactions
-UNION ALL SELECT 'raw_virements',     COUNT(*) FROM raw_virements
+SELECT 'raw_tenants'               AS table_name, COUNT(*) AS row_count FROM raw_tenants
+UNION ALL SELECT 'raw_categories',               COUNT(*) FROM raw_categories
+UNION ALL SELECT 'raw_fx_rates',                 COUNT(*) FROM raw_fx_rates
+UNION ALL SELECT 'raw_comptes',                  COUNT(*) FROM raw_comptes
+UNION ALL SELECT 'raw_transactions',             COUNT(*) FROM raw_transactions
+UNION ALL SELECT 'raw_virements',                COUNT(*) FROM raw_virements
+UNION ALL SELECT 'raw_titulaires',               COUNT(*) FROM raw_titulaires
+UNION ALL SELECT 'raw_compte_titulaires',        COUNT(*) FROM raw_compte_titulaires
 ORDER BY table_name;
 
 -- ============================================
