@@ -31,7 +31,7 @@ jobs:
       - name: Lint changed files
         run: |
           git fetch origin ${{ github.base_ref }}
-          FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'dbt/models/**/*.sql')
+          FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD -- 'dbt/models/**/*.sql' 2>/dev/null || echo "")
           if [ -n "$FILES" ]; then
             sqlfluff lint $FILES
           else
