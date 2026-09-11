@@ -61,6 +61,25 @@ jobs:
           # aws s3 cp s3://fintrack-dbt-artifacts/prod/manifest.json prod-artifacts/
           echo "Placeholder — configurer le download du manifest prod"
 
+      - name: Create profiles.yml
+        working-directory: ./dbt
+        run: |
+          cat > profiles.yml << EOF
+          fintrack_perf_scale:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+                user: ${{ secrets.SNOWFLAKE_CI_USER }}
+                password: ${{ secrets.SNOWFLAKE_CI_PASSWORD }}
+                role: FINTRACK_DEV_ROLE
+                database: FINTRACK_DEV
+                warehouse: WH_DEV
+                schema: CI_${{ github.event.pull_request.number }}
+                threads: 4
+          EOF
+
       - name: dbt deps
         working-directory: ./dbt
         run: dbt deps --profiles-dir .
